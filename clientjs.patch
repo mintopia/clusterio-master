@@ -1,0 +1,16 @@
+diff --git a/client.js b/client.js
+index f638e72..6e36fe8 100644
+--- a/client.js
++++ b/client.js
+@@ -306,9 +306,10 @@ write-data=${ path.resolve(config.instanceDirectory, instance) }\r\n
+ 		"auto_pause": config.auto_pause,
+ 	}
+ 	fs.writeFileSync(instancedirectory + "/server-settings.json", JSON.stringify(serversettings, null, 4));
++	let instanceAbsolutePath = path.resolve(instancedirectory);
+ 	let createSave = child_process.spawnSync(
+ 		'./' + config.factorioDirectory + '/bin/x64/factorio', [
+-			'-c', path.resolve(instancedirectory, '/config.ini'),
++			'-c', instanceAbsolutePath + '/config.ini',
+ 			'--create', instancedirectory + '/saves/save.zip',
+ 		]
+ 	);

@@ -1,24 +1,41 @@
+FROM node:12 AS build
+
+env \
+    CLUSTERIO_VERSION=1.2.4
+
+RUN apt-get update && apt-get -y upgrade && \
+    apt install -y apt-utils python-dev git wget curl tar build-essential && rm -rf /var/cache/apt/* && \
+    curl -o clusterio.tar.gz -L https://github.com/clusterio/factorioClusterio/archive/${CLUSTERIO_VERSION}.tar.gz && \
+    tar -zxf clusterio.tar.gz && \
+    mv factorioClusterio-${CLUSTERIO_VERSION} factorioClusterio && \
+    cd factorioClusterio && \
+    npm install --only=production && \
+    node lib/npmPostinstall.js && \
+    curl -o factorio.tar.xz -L https://www.factorio.com/get-download/latest/headless/linux64 && \
+    tar -xvf factorio.tar.xz && \
+    rm factorio.tar.xz  && \
+    mkdir -p instances sharedMods sharedPlugins database/linvodb
+
+# end build container
+
 FROM node:12
-MAINTAINER Jessica Smith <jess@mintopia.net
-
-EXPOSE 8080
-
-ENV \
-    CLUSTERIO_VERSION=1.2.4 \
-    CLUSTERIO_MASTER_AUTH_SECRET=
+LABEL maintainer "me@gotenxiao.co.uk"
 
 RUN \
-    wget -O /tmp/clusterio.tar.gz https://github.com/clusterio/factorioClusterio/archive/${CLUSTERIO_VERSION}.tar.gz && \
-    tar -zxf /tmp/clusterio.tar.gz -C /opt && \
-    mv /opt/factorioClusterio-${CLUSTERIO_VERSION} /opt/clusterio/ && \
-    rm /tmp/clusterio.tar.gz && \
-    chdir /opt/clusterio && \
-    npm install --only=production && \
-    node lib/npmPostinstall.js
+	apt-get update \
+	&& apt-get -y install gettext-base \
+	&& rm -rf /var/cache/apt/*
 
-COPY overlay /
+COPY --from=build /factorioClusterio /factorioClusterio/
+WORKDIR /factorioClusterio
 
-WORKDIR /opt/clusterio
+EXPOSE 8080 34167
 
-ENTRYPOINT ["/bin/bash", "clusterio.sh"]
-CMD ["node", "master.js"]
+VOLUME \
+    /factorioClusterio/instances \
+    /factorioClusterio/sharedMods \
+    /factorioClusterio/sharedPlugins
+
+COPY docker-entrypoint.sh /
+COPY make-config.sh config.json.tmpl /factorioClusterio/
+ENTRYPOINT ["/docker-entrypoint.sh"]

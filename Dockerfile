@@ -1,9 +1,7 @@
 FROM node:12 AS build
 
-# We specify version to allow us to easily rebuild when Factorio version changes
 env \
-    CLUSTERIO_VERSION=1.2.4 \
-    FACTORIO_VERSION=0.18.12
+    CLUSTERIO_VERSION=1.2.4
 
 RUN apt-get update && apt-get -y upgrade && \
     apt install -y apt-utils python-dev git wget curl tar build-essential && rm -rf /var/cache/apt/* && \
@@ -13,7 +11,7 @@ RUN apt-get update && apt-get -y upgrade && \
     cd factorioClusterio && \
     npm install --only=production && \
     node lib/npmPostinstall.js && \
-    curl -o factorio.tar.xz -L https://www.factorio.com/get-download/${FACTORIO_VERSION}/headless/linux64 && \
+    curl -o factorio.tar.xz -L https://www.factorio.com/get-download/latest/headless/linux64 && \
     tar -xvf factorio.tar.xz && \
     rm factorio.tar.xz  && \
     mkdir -p instances sharedMods sharedPlugins database/linvodb
@@ -41,4 +39,5 @@ VOLUME \
 
 COPY docker-entrypoint.sh /
 COPY make-config.sh config.json.tmpl /factorioClusterio/
+STOPSIGNAL SIGINT
 ENTRYPOINT ["/docker-entrypoint.sh"]

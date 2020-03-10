@@ -13,14 +13,14 @@ if [ "$CLUSTERIO_MODE" == "master" ]
 then
 	if [ ! -e secret-api-token.txt ]; then
 		echo "Running to generate secret API token"
-		node $INSTANCE master.js
+		node master.js
 	fi;
 	echo "API Token: $(cat secret-api-token.txt)"
-	node $INSTANCE master.js
+	node master.js
 elif [ "$CLUSTERIO_MODE" == "client" ]
 then
 	# create instance on client
 	node client.js start $INSTANCE
 	node client.js manage shared mods add clusterio
-	node -- start $INSTANCE
+	node client.js start $INSTANCE
 fi

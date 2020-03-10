@@ -29,9 +29,10 @@ RUN \
 COPY --from=build /factorioClusterio /factorioClusterio/
 WORKDIR /factorioClusterio
 
-EXPOSE 8080 34167
+EXPOSE 8080
 
 VOLUME \
+    /factorioClusterio/database \
     /factorioClusterio/instances \
     /factorioClusterio/sharedMods \
     /factorioClusterio/sharedPlugins
